@@ -1,16 +1,30 @@
 import React, { useState } from 'react';
 import type { Producto } from '../../types/database';
-import { Package, Search, Plus, AlertCircle, Barcode } from 'lucide-react';
+import { Package, Search, Plus, AlertCircle, Barcode, X } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 interface InventarioViewProps {
   productos: Producto[];
+  onAddProducto?: (producto: Producto) => void;
 }
 
-export const InventarioView: React.FC<InventarioViewProps> = ({ productos }) => {
+export const InventarioView: React.FC<InventarioViewProps> = ({
+  productos,
+  onAddProducto,
+}) => {
   const { isDark } = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCat, setFilterCat] = useState('TODAS');
+  const [showProductModal, setShowProductModal] = useState(false);
+
+  // New product form
+  const [nombre, setNombre] = useState('');
+  const [categoria, setCategoria] = useState('Farmacia');
+  const [codigoBarras, setCodigoBarras] = useState('');
+  const [precioCosto, setPrecioCosto] = useState<number>(10);
+  const [precioVenta, setPrecioVenta] = useState<number>(18);
+  const [stockActual, setStockActual] = useState<number>(50);
+  const [requiereLote, setRequiereLote] = useState(true);
 
   const categories = ['TODAS', 'Farmacia', 'Soluciones', 'Especialidades', 'Pediátrico', 'Cuidado Personal'];
 
@@ -21,6 +35,29 @@ export const InventarioView: React.FC<InventarioViewProps> = ({ productos }) => 
     const matchesCat = filterCat === 'TODAS' || p.categoria === filterCat;
     return matchesSearch && matchesCat;
   });
+
+  const handleCreateProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nombre.trim()) return;
+
+    const newProd: Producto = {
+      id: `prod-${Date.now()}`,
+      nombre,
+      categoria,
+      codigo_barras: codigoBarras || `${Math.floor(Math.random() * 900000000000 + 100000000000)}`,
+      precio_costo: Number(precioCosto),
+      precio_venta: Number(precioVenta),
+      stock_actual: Number(stockActual),
+      stock_minimo: 10,
+      unidad_medida: 'UNIDAD',
+      requiere_lote: requiereLote,
+    };
+
+    onAddProducto?.(newProd);
+    setNombre('');
+    setCodigoBarras('');
+    setShowProductModal(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -58,7 +95,10 @@ export const InventarioView: React.FC<InventarioViewProps> = ({ productos }) => 
             />
           </div>
 
-          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-md shadow-cyan-600/20 cursor-pointer">
+          <button
+            onClick={() => setShowProductModal(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-md shadow-cyan-600/20 cursor-pointer"
+          >
             <Plus className="w-4 h-4" />
             <span>Nuevo Producto</span>
           </button>
@@ -175,6 +215,167 @@ export const InventarioView: React.FC<InventarioViewProps> = ({ productos }) => 
           </table>
         </div>
       </div>
+
+      {/* Modal: Agregar Producto */}
+      {showProductModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div
+            className={`w-full max-w-lg rounded-2xl border p-6 shadow-2xl transition-all ${
+              isDark
+                ? 'bg-[#0f172a] border-[#233554] text-slate-100'
+                : 'bg-white border-slate-200 text-slate-800'
+            }`}
+          >
+            <div className="flex items-center justify-between pb-3 border-b mb-4">
+              <h3 className="text-base font-bold flex items-center gap-2">
+                <Package className="w-5 h-5 text-cyan-500" />
+                <span>Agregar Nuevo Producto</span>
+              </h3>
+              <button
+                onClick={() => setShowProductModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateProduct} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold mb-1">Nombre del Producto</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="ej. Ibuprofeno 400mg Tabletas"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  className={`w-full px-3 py-2 text-xs border rounded-xl outline-none ${
+                    isDark
+                      ? 'bg-[#142038] border-[#233554] text-white'
+                      : 'bg-slate-50 border-slate-200 text-slate-800'
+                  }`}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold mb-1">Categoría</label>
+                  <select
+                    value={categoria}
+                    onChange={(e) => setCategoria(e.target.value)}
+                    className={`w-full px-3 py-2 text-xs border rounded-xl outline-none ${
+                      isDark
+                        ? 'bg-[#142038] border-[#233554] text-white'
+                        : 'bg-slate-50 border-slate-200 text-slate-800'
+                    }`}
+                  >
+                    <option value="Farmacia">Farmacia</option>
+                    <option value="Soluciones">Soluciones</option>
+                    <option value="Especialidades">Especialidades</option>
+                    <option value="Pediátrico">Pediátrico</option>
+                    <option value="Cuidado Personal">Cuidado Personal</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold mb-1">Código de Barras EAN</label>
+                  <input
+                    type="text"
+                    placeholder="ej. 770200192806"
+                    value={codigoBarras}
+                    onChange={(e) => setCodigoBarras(e.target.value)}
+                    className={`w-full px-3 py-2 text-xs border rounded-xl outline-none ${
+                      isDark
+                        ? 'bg-[#142038] border-[#233554] text-white'
+                        : 'bg-slate-50 border-slate-200 text-slate-800'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold mb-1">Precio Costo ($)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    required
+                    value={precioCosto}
+                    onChange={(e) => setPrecioCosto(Number(e.target.value))}
+                    className={`w-full px-3 py-2 text-xs border rounded-xl outline-none ${
+                      isDark
+                        ? 'bg-[#142038] border-[#233554] text-white'
+                        : 'bg-slate-50 border-slate-200 text-slate-800'
+                    }`}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold mb-1">Precio Venta POS ($)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    required
+                    value={precioVenta}
+                    onChange={(e) => setPrecioVenta(Number(e.target.value))}
+                    className={`w-full px-3 py-2 text-xs border rounded-xl outline-none ${
+                      isDark
+                        ? 'bg-[#142038] border-[#233554] text-white'
+                        : 'bg-slate-50 border-slate-200 text-slate-800'
+                    }`}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold mb-1">Stock Inicial</label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    value={stockActual}
+                    onChange={(e) => setStockActual(Number(e.target.value))}
+                    className={`w-full px-3 py-2 text-xs border rounded-xl outline-none ${
+                      isDark
+                        ? 'bg-[#142038] border-[#233554] text-white'
+                        : 'bg-slate-50 border-slate-200 text-slate-800'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="reqLote"
+                  checked={requiereLote}
+                  onChange={(e) => setRequiereLote(e.target.checked)}
+                  className="w-4 h-4 rounded text-cyan-600 cursor-pointer"
+                />
+                <label htmlFor="reqLote" className="text-xs cursor-pointer select-none">
+                  Requiere control sanitario de lote y fecha de vencimiento
+                </label>
+              </div>
+
+              <div className="pt-3 border-t flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowProductModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-md cursor-pointer"
+                >
+                  Guardar Producto
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

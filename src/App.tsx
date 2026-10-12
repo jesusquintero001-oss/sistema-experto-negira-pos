@@ -15,7 +15,6 @@ import { OfertasCombosView } from './components/Views/OfertasCombosView';
 import { GananciasView } from './components/Views/GananciasView';
 import { DevolucionesView } from './components/Views/DevolucionesView';
 import { VencimientosView } from './components/Views/VencimientosView';
-import { PostgresView } from './components/Views/PostgresView';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 
 import {
@@ -27,7 +26,14 @@ import {
   catalogoProductosMock,
   facturasMock,
 } from './data/mockData';
-import type { Factura } from './types/database';
+import type {
+  Factura,
+  OfertaActiva,
+  ComboDescuento,
+  Producto,
+  Devolucion,
+  LoteVencimiento,
+} from './types/database';
 
 function DashboardApp() {
   const { isDark } = useTheme();
@@ -39,11 +45,36 @@ function DashboardApp() {
   // Dynamic state for live updates
   const [metrics, setMetrics] = useState(metricasIniciales);
   const [facturas, setFacturas] = useState(facturasMock);
-  const [productos] = useState(catalogoProductosMock);
-  const [devoluciones] = useState(devolucionesMock);
-  const [ofertas] = useState(ofertasActivasMock);
-  const [combos] = useState(combosDescuentosMock);
-  const [lotes] = useState(lotesVencimientosMock);
+  const [productos, setProductos] = useState(catalogoProductosMock);
+  const [devoluciones, setDevoluciones] = useState(devolucionesMock);
+  const [ofertas, setOfertas] = useState(ofertasActivasMock);
+  const [combos, setCombos] = useState(combosDescuentosMock);
+  const [lotes, setLotes] = useState(lotesVencimientosMock);
+
+  // Handle adding new items dynamically
+  const handleAddOferta = (newOferta: OfertaActiva) => {
+    setOfertas((prev) => [newOferta, ...prev]);
+  };
+
+  const handleAddCombo = (newCombo: ComboDescuento) => {
+    setCombos((prev) => [newCombo, ...prev]);
+    setMetrics((prev) => ({
+      ...prev,
+      combos_aplicados_count: prev.combos_aplicados_count + 1,
+    }));
+  };
+
+  const handleAddProducto = (newProd: Producto) => {
+    setProductos((prev) => [newProd, ...prev]);
+  };
+
+  const handleAddDevolucion = (newDev: Devolucion) => {
+    setDevoluciones((prev) => [newDev, ...prev]);
+  };
+
+  const handleAddLote = (newLote: LoteVencimiento) => {
+    setLotes((prev) => [newLote, ...prev]);
+  };
 
   // Handle successful sale from POS modal
   const handleSaleComplete = (newFactura: Factura, itemsCount: number, descuento: number) => {
@@ -113,7 +144,7 @@ function DashboardApp() {
                 </div>
               </div>
 
-              {/* Row 1: KPI Stats Cards (Total Productos Vendidos, Total Facturas, Ganancias, Descuentos Automáticos, Total Transacciones) */}
+              {/* Row 1: KPI Stats Cards */}
               <KpiCards metrics={metrics} />
 
               {/* Row 2: Sales Trend Chart & Recent Returns Table */}
@@ -129,12 +160,7 @@ function DashboardApp() {
                 </div>
               </div>
 
-              {/* Row 3: 4 Panels matching prompt & mockup:
-                  1. Ofertas Activas
-                  2. Combos con Descuentos Automáticos
-                  3. Ganancias Mensuales (Donut chart)
-                  4. Alertas de Vencimiento Inminentes (Red alert table)
-              */}
+              {/* Row 3: 4 Panels */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 <ActiveOffers
                   offers={ofertas}
@@ -153,23 +179,39 @@ function DashboardApp() {
             </div>
           )}
 
-          {activeTab === 'inventario' && <InventarioView productos={productos} />}
+          {activeTab === 'inventario' && (
+            <InventarioView
+              productos={productos}
+              onAddProducto={handleAddProducto}
+            />
+          )}
 
           {activeTab === 'facturacion' && <FacturacionView facturas={facturas} />}
 
           {activeTab === 'ofertas' && (
-            <OfertasCombosView ofertas={ofertas} combos={combos} />
+            <OfertasCombosView
+              ofertas={ofertas}
+              combos={combos}
+              onAddOferta={handleAddOferta}
+              onAddCombo={handleAddCombo}
+            />
           )}
 
           {activeTab === 'ganancias' && <GananciasView metrics={metrics} />}
 
           {activeTab === 'devoluciones' && (
-            <DevolucionesView devoluciones={devoluciones} />
+            <DevolucionesView
+              devoluciones={devoluciones}
+              onAddDevolucion={handleAddDevolucion}
+            />
           )}
 
-          {activeTab === 'vencimientos' && <VencimientosView lotes={lotes} />}
-
-          {activeTab === 'postgresql' && <PostgresView />}
+          {activeTab === 'vencimientos' && (
+            <VencimientosView
+              lotes={lotes}
+              onAddLote={handleAddLote}
+            />
+          )}
         </main>
       </div>
 

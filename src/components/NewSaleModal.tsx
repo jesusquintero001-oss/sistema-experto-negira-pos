@@ -160,9 +160,6 @@ export const NewSaleModal: React.FC<NewSaleModalProps> = ({
               >
                 Terminal de Punto de Venta (POS) — NEGIRA S.A.
               </h3>
-              <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Emisión de factura rápida con motor de descuentos y combos automáticos
-              </p>
             </div>
           </div>
 
@@ -203,7 +200,7 @@ export const NewSaleModal: React.FC<NewSaleModalProps> = ({
                 <span className={`font-mono font-bold ${isDark ? 'text-cyan-400' : 'text-cyan-700'}`}>
                   {lastInvoice.numero_factura}
                 </span>{' '}
-                registrada en PostgreSQL.
+                emitida y registrada exitosamente.
               </p>
             </div>
 

@@ -7,7 +7,6 @@ import {
   TrendingUp,
   RotateCcw,
   CalendarClock,
-  Database,
   Building2,
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
@@ -19,8 +18,7 @@ export type TabKey =
   | 'ofertas'
   | 'ganancias'
   | 'devoluciones'
-  | 'vencimientos'
-  | 'postgresql';
+  | 'vencimientos';
 
 interface SidebarProps {
   activeTab: TabKey;
@@ -38,7 +36,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
     { key: 'ganancias' as TabKey, label: 'Ganancias', icon: TrendingUp },
     { key: 'devoluciones' as TabKey, label: 'Devoluciones', icon: RotateCcw },
     { key: 'vencimientos' as TabKey, label: 'Vencimientos', icon: CalendarClock },
-    { key: 'postgresql' as TabKey, label: 'Esquema PostgreSQL', icon: Database },
   ];
 
   return (
@@ -130,30 +127,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
           );
         })}
       </nav>
-
-      {/* Tech Stack Badge (from whiteboard & mockup) */}
-      <div
-        className={`p-4 m-3 rounded-xl border text-[11px] leading-relaxed select-none ${
-          isDark
-            ? 'bg-[#080d17]/80 border-[#1e2738]/80 text-slate-400 shadow-inner'
-            : 'bg-slate-50 border-slate-200 text-slate-600 shadow-2xs'
-        }`}
-      >
-        <p
-          className={`font-semibold tracking-wider text-[10px] uppercase mb-1 ${
-            isDark ? 'text-slate-400' : 'text-slate-500'
-          }`}
-        >
-          DESARROLLADO CON:
-        </p>
-        <p
-          className={`font-mono font-medium tracking-tight ${
-            isDark ? 'text-cyan-300' : 'text-cyan-700'
-          }`}
-        >
-          HTML | CSS | TYPESCRIPT | REACT | POSTGRESQL
-        </p>
-      </div>
     </aside>
   );
 };
